@@ -4,7 +4,6 @@ const UsersSchema = new mongoose.Schema({
 	fullname: {
 		type: mongoose.Schema.Types.String,
 		required: true,
-		unique: true,
 	},
 	email: {
 		type: mongoose.Schema.Types.String,
