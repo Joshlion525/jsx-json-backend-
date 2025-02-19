@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { request, Router } from "express";
 import {
 	query,
 	validationResult,
@@ -6,6 +6,7 @@ import {
 	matchedData,
 	checkSchema,
 } from "express-validator";
+import mongoose from "mongoose"; 
 import { User } from "../mongoose/schemas/user.mjs";
 import { createUsersValidationSchema } from "../utils/validationSchemas.mjs";
 import { hashPassword } from "../utils/helpers.mjs";
@@ -56,6 +57,38 @@ router.get("/users", async (request, response) => {
 		return response
 			.status(500)
 			.json({ msg: "Server error, try again later." });
+	}
+});
+router.get("/users/:id", async (request, response) => {
+	const { id } = request.params;
+
+	try {
+		const users = await User.findById(id);
+		return response.status(200).json(users);
+	} catch (error) {
+		console.error("Error fetching the user", error);
+		return response.status(500).json({ msg: "Internal server error" });
+	}
+});
+router.patch("/users/:id", async (request, response) => {
+	const { id } = request.params;
+	const updateData = request.body;
+	if (!mongoose.Types.ObjectId.isValid(id)) {
+		return response.status(400).json({ msg: "Invalid user ID format" });
+	}
+	try {
+		const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+			new: true,
+		});
+		if (!updatedUser) {
+			return response.status(404).json({ msg: "User not found" });
+		}
+		return response
+			.status(200)
+			.json({ msg: "User updated successfully", updatedUser });
+	} catch (error) {
+		console.error("Error updating user:", error);
+		return response.status(500).json({ msg: "Internal server error" });
 	}
 });
 
